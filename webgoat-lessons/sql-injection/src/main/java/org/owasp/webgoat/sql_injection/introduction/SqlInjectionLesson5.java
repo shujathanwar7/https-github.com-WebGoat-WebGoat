@@ -44,7 +44,7 @@ public class SqlInjectionLesson5 extends AssignmentEndpoint {
 
     protected AttackResult injectableQuery(String query) {
         try {
-            String regex = "(?i)^(grant alter table to [\"']?unauthorizedUser[\"']?)(?:[;]?)$";
+            String regex = "(?i)^(grant alter table to [']?unauthorizedUser[']?)(?:[;]?)$";
             StringBuffer output = new StringBuffer();
 
             // user completes lesson if the query is correct

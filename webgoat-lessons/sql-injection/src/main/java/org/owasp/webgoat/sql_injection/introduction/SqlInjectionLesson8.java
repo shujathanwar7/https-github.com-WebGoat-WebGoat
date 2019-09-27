@@ -25,11 +25,10 @@ package org.owasp.webgoat.sql_injection.introduction;
 
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
-import org.owasp.webgoat.assignments.AssignmentPath;
 import org.owasp.webgoat.assignments.AttackResult;
-import org.owasp.webgoat.session.DatabaseUtilities;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 
@@ -38,6 +37,12 @@ import java.sql.*;
 @RestController
 @AssignmentHints(value = {"SqlStringInjectionHint.8.1", "SqlStringInjectionHint.8.2", "SqlStringInjectionHint.8.3", "SqlStringInjectionHint.8.4", "SqlStringInjectionHint.8.5"})
 public class SqlInjectionLesson8 extends AssignmentEndpoint {
+
+    private final DataSource dataSource;
+
+    public SqlInjectionLesson8(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @PostMapping("/SqlInjection/attack8")
     @ResponseBody
@@ -50,7 +55,7 @@ public class SqlInjectionLesson8 extends AssignmentEndpoint {
         String query = "SELECT * FROM employees WHERE last_name = '" + name + "' AND auth_tan = '" + auth_tan + "'";
 
         try {
-            Connection connection = DatabaseUtilities.getConnection(getWebSession());
+            Connection connection = dataSource.getConnection();
 
             try {
                 Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);

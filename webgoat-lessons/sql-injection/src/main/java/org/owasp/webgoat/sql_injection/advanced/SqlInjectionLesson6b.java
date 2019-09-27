@@ -24,11 +24,10 @@
 package org.owasp.webgoat.sql_injection.advanced;
 
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
-import org.owasp.webgoat.assignments.AssignmentPath;
 import org.owasp.webgoat.assignments.AttackResult;
-import org.owasp.webgoat.session.DatabaseUtilities;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,10 +38,16 @@ import java.sql.Statement;
 @RestController
 public class SqlInjectionLesson6b extends AssignmentEndpoint {
 
+    private final DataSource dataSource;
+
+    public SqlInjectionLesson6b(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     @PostMapping("/SqlInjectionAdvanced/attack6b")
     @ResponseBody
     public AttackResult completed(@RequestParam String userid_6b) throws IOException {
-        if (userid_6b.toString().equals(getPassword())) {
+        if (userid_6b.equals(getPassword())) {
             return trackProgress(success().build());
         } else {
             return trackProgress(failed().build());
@@ -50,10 +55,9 @@ public class SqlInjectionLesson6b extends AssignmentEndpoint {
     }
 
     protected String getPassword() {
-
         String password = "dave";
         try {
-            Connection connection = DatabaseUtilities.getConnection(getWebSession());
+            Connection connection = dataSource.getConnection();
             String query = "SELECT password FROM user_system_data WHERE user_name = 'dave'";
 
             try {
@@ -61,7 +65,7 @@ public class SqlInjectionLesson6b extends AssignmentEndpoint {
                         ResultSet.CONCUR_READ_ONLY);
                 ResultSet results = statement.executeQuery(query);
 
-                if ((results != null) && (results.first() == true)) {
+                if (results != null && results.first()) {
                     password = results.getString("password");
                 }
             } catch (SQLException sqle) {

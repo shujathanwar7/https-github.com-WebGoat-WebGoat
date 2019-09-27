@@ -32,7 +32,6 @@ package org.owasp.webgoat;
 
 import org.owasp.webgoat.session.UserSessionData;
 import org.owasp.webgoat.session.WebSession;
-import org.owasp.webgoat.session.WebgoatContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -52,8 +51,8 @@ public class WebGoat {
 
     @Bean
     @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public WebSession webSession(WebgoatContext webgoatContext) {
-        return new WebSession(webgoatContext);
+    public WebSession webSession() {
+        return new WebSession();
     }
 
     @Bean

@@ -26,53 +26,49 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.owasp.webgoat.assignments.AssignmentEndpointTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.mockito.Mockito.when;
+import javax.sql.DataSource;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SqlInjectionLesson5Test extends AssignmentEndpointTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ActiveProfiles({"webgoat", "test"})
+@SpringBootTest
+public class SqlInjectionLesson2Test {
 
+    @Value("${webgoat.user.directory}")
+    private String webGoatDir;
     private MockMvc mockMvc;
+    @Autowired
+    private DataSource dataSource;
 
     @Before
     public void setup() {
-        SqlInjectionLesson5 sql = new SqlInjectionLesson5();
-        init(sql);
-        this.mockMvc = standaloneSetup(sql).build();
-        when(webSession.getCurrentLesson()).thenReturn(new SqlInjection());
-
+        this.mockMvc = standaloneSetup(new SqlInjectionLesson2(dataSource)).build();
     }
 
     @Test
-    public void grantSolution() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/SqlInjection/attack5")
-                .param("_query","grant alter table to unauthorizedUser"))
+    public void solution() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/SqlInjection/attack2")
+                .param("query", "SELECT department FROM employees WHERE userid=96134;"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.output", CoreMatchers.containsString("grant")))
                 .andExpect(jsonPath("$.lessonCompleted", CoreMatchers.is(true)));
     }
 
     @Test
-    public void grantSolutionWithSingleQuotes() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/SqlInjection/attack5")
-                .param("_query","grant alter table to 'unauthorizedUser';"))
+    public void solutionWithQuotes() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/SqlInjection/attack2")
+                .param("query", "select * from employees where first_name='Bob' and last_name='Franco'"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.output", CoreMatchers.containsString("grant")))
                 .andExpect(jsonPath("$.lessonCompleted", CoreMatchers.is(true)));
-    }
-
-    @Test
-    public void grantSolutionWrong() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/SqlInjection/attack5")
-                .param("_query","grant alter table to me"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.lessonCompleted", CoreMatchers.is(false)));
     }
 }
