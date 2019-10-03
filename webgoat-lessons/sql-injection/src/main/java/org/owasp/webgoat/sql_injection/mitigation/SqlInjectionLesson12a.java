@@ -52,14 +52,15 @@ public class SqlInjectionLesson12a extends AssignmentEndpoint {
     @ResponseBody
     @SneakyThrows
     public AttackResult completed(@RequestParam String ip) {
-        Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("select ip from servers where ip = ? and hostname = ?");
-        preparedStatement.setString(1, ip);
-        preparedStatement.setString(2, "webgoat-prd");
-        ResultSet resultSet = preparedStatement.executeQuery();
-        if (resultSet.next()) {
-            return trackProgress(success().build());
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("select ip from servers where ip = ? and hostname = ?");
+            preparedStatement.setString(1, ip);
+            preparedStatement.setString(2, "webgoat-prd");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return trackProgress(success().build());
+            }
+            return trackProgress(failed().build());
         }
-        return trackProgress(failed().build());
     }
 }

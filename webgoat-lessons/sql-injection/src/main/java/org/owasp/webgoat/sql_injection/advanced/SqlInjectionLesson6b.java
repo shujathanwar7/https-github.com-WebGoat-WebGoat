@@ -25,7 +25,10 @@ package org.owasp.webgoat.sql_injection.advanced;
 
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AttackResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -56,10 +59,8 @@ public class SqlInjectionLesson6b extends AssignmentEndpoint {
 
     protected String getPassword() {
         String password = "dave";
-        try {
-            Connection connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             String query = "SELECT password FROM user_system_data WHERE user_name = 'dave'";
-
             try {
                 Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                         ResultSet.CONCUR_READ_ONLY);

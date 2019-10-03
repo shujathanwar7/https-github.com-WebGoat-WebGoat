@@ -57,8 +57,8 @@ public class SqlInjectionLesson2 extends AssignmentEndpoint {
     }
 
     protected AttackResult injectableQuery(String query) {
-        try {
-            Statement statement = dataSource.getConnection().createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY);
+        try (var connection = dataSource.getConnection()) {
+            Statement statement = connection.createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY);
             ResultSet results = statement.executeQuery(query);
             StringBuffer output = new StringBuffer();
 

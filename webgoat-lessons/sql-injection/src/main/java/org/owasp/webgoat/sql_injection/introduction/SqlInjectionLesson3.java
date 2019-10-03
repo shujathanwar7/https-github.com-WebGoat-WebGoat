@@ -37,6 +37,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static java.sql.ResultSet.CONCUR_READ_ONLY;
+import static java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE;
+
 
 @RestController
 @AssignmentHints(value = {"SqlStringInjectionHint3-1", "SqlStringInjectionHint3-2"})
@@ -55,15 +58,10 @@ public class SqlInjectionLesson3 extends AssignmentEndpoint {
     }
 
     protected AttackResult injectableQuery(String _query) {
-        try {
-            Connection connection = dataSource.getConnection();
-            String query = _query;
-
-            try {
-                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
-                Statement check_statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
+        try (Connection connection = dataSource.getConnection()) {
+            try (Statement statement = connection.createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY)) {
+                Statement check_statement = connection.createStatement(TYPE_SCROLL_INSENSITIVE,
+                        CONCUR_READ_ONLY);
                 statement.executeUpdate(_query);
                 ResultSet _results = check_statement.executeQuery("SELECT * FROM employees WHERE last_name='Barnett';");
                 StringBuffer output = new StringBuffer();
@@ -78,7 +76,6 @@ public class SqlInjectionLesson3 extends AssignmentEndpoint {
                 }
 
             } catch (SQLException sqle) {
-
                 return trackProgress(failed().output(sqle.getMessage()).build());
             }
         } catch (Exception e) {

@@ -52,13 +52,10 @@ public class SqlInjectionLesson4 extends AssignmentEndpoint {
     }
 
     protected AttackResult injectableQuery(String _query) {
-        try {
-            Connection connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             try {
-                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
-                Statement check_statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
+                Statement statement = connection.createStatement();
+                Statement check_statement = connection.createStatement();
                 statement.executeUpdate(_query);
                 ResultSet _results = check_statement.executeQuery("SELECT phone from employees;");
                 ResultSetMetaData _resultMetaData = _results.getMetaData();
@@ -70,9 +67,7 @@ public class SqlInjectionLesson4 extends AssignmentEndpoint {
                 } else {
                     return trackProgress(failed().output(output.toString()).build());
                 }
-
             } catch (SQLException sqle) {
-
                 return trackProgress(failed().output(sqle.getMessage()).build());
             }
         } catch (Exception e) {

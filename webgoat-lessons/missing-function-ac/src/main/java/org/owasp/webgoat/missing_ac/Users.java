@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 
 public class Users {
@@ -44,8 +47,7 @@ public class Users {
     @ResponseBody
     protected HashMap<Integer, HashMap> getUsers() {
 
-        try {
-            Connection connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             String query = "SELECT * FROM user_data";
 
             try {
@@ -55,9 +57,6 @@ public class Users {
                 HashMap<Integer, HashMap> allUsersMap = new HashMap();
 
                 if ((results != null) && (results.first() == true)) {
-                    ResultSetMetaData resultsMetaData = results.getMetaData();
-                    StringBuffer output = new StringBuffer();
-
                     while (results.next()) {
                         int id = results.getInt(0);
                         HashMap<String, String> userMap = new HashMap<>();

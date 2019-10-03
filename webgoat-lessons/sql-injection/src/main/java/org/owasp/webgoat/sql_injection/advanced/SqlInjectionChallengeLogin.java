@@ -47,16 +47,18 @@ public class SqlInjectionChallengeLogin extends AssignmentEndpoint {
     @PostMapping("/SqlInjectionAdvanced/challenge_Login")
     @ResponseBody
     public AttackResult login(@RequestParam String username_login, @RequestParam String password_login) throws Exception {
-        PreparedStatement statement = dataSource.getConnection().prepareStatement("select password from sql_challenge_users where userid = ? and password = ?");
-        statement.setString(1, username_login);
-        statement.setString(2, password_login);
-        ResultSet resultSet = statement.executeQuery();
+        try (var connection = dataSource.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement("select password from sql_challenge_users where userid = ? and password = ?");
+            statement.setString(1, username_login);
+            statement.setString(2, password_login);
+            ResultSet resultSet = statement.executeQuery();
 
-        if (resultSet.next()) {
-            return ("tom".equals(username_login)) ? trackProgress(success().build())
-                    : success().feedback("ResultsButNotTom").build();
-        } else {
-            return failed().feedback("NoResultsMatched").build();
+            if (resultSet.next()) {
+                return ("tom".equals(username_login)) ? trackProgress(success().build())
+                        : success().feedback("ResultsButNotTom").build();
+            } else {
+                return failed().feedback("NoResultsMatched").build();
+            }
         }
     }
 }

@@ -31,7 +31,6 @@ import org.owasp.webgoat.assignments.AttackResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -91,8 +90,7 @@ public class JWTFinalEndpoint extends AssignmentEndpoint {
                     @Override
                     public byte[] resolveSigningKeyBytes(JwsHeader header, Claims claims) {
                         final String kid = (String) header.get("kid");
-                        try {
-                            Connection connection = dataSource.getConnection();
+                        try (var connection = dataSource.getConnection()) {
                             ResultSet rs = connection.createStatement().executeQuery("SELECT key FROM jwt_keys WHERE id = '" + kid + "'");
                             while (rs.next()) {
                                 return TextCodec.BASE64.decode(rs.getString(1));

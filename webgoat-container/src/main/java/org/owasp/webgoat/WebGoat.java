@@ -33,15 +33,21 @@ package org.owasp.webgoat;
 import org.owasp.webgoat.session.UserSessionData;
 import org.owasp.webgoat.session.WebSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.web.client.RestTemplate;
 
+import javax.sql.DataSource;
 import java.io.File;
 
 @SpringBootApplication
+@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 public class WebGoat {
 
     @Bean(name = "pluginTargetDirectory")
@@ -64,5 +70,16 @@ public class WebGoat {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Primary
+    @Bean
+    public DataSource dataSource(@Value("${spring.datasource.driver-class-name}") String driverClass,
+                                 @Value("${spring.datasource.url}") String url) {
+        return DataSourceBuilder.create()
+                .driverClassName(driverClass)
+                .url(url)
+                .build();
+
     }
 }

@@ -26,13 +26,18 @@ package org.owasp.webgoat.sql_injection.introduction;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
-import java.util.Calendar;
-import java.text.SimpleDateFormat;
-
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import static java.sql.ResultSet.CONCUR_READ_ONLY;
+import static java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE;
 
 @RestController
 @AssignmentHints(value = {"SqlStringInjectionHint.8.1", "SqlStringInjectionHint.8.2", "SqlStringInjectionHint.8.3", "SqlStringInjectionHint.8.4", "SqlStringInjectionHint.8.5"})
@@ -54,11 +59,9 @@ public class SqlInjectionLesson8 extends AssignmentEndpoint {
         StringBuffer output = new StringBuffer();
         String query = "SELECT * FROM employees WHERE last_name = '" + name + "' AND auth_tan = '" + auth_tan + "'";
 
-        try {
-            Connection connection = dataSource.getConnection();
-
+        try (Connection connection = dataSource.getConnection()) {
             try {
-                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                Statement statement = connection.createStatement();
                 log(connection, query);
                 ResultSet results = statement.executeQuery(query);
 
@@ -131,7 +134,7 @@ public class SqlInjectionLesson8 extends AssignmentEndpoint {
         String log_query = "INSERT INTO access_log (time, action) VALUES ('" + time + "', '" + action + "')";
 
         try {
-            Statement statement = connection.createStatement();
+            Statement statement = connection.createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY);
             statement.executeUpdate(log_query);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
